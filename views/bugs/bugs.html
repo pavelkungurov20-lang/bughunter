@@ -18,9 +18,34 @@
 
         <section class="table-section">
             <div class="section-header">
-                <h2>Все дефекты (<?= count($bugs) ?>)</h2>
+                <h2>Все дефекты (<?= (int)$totalItems ?>)</h2>
                 <a href="bug_create.php" class="btn-primary">+ Создать баг</a>
             </div>
+
+            <!-- Форма поиска (LIKE) и фильтрации -->
+            <form method="GET" action="bugs.php" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;">
+                <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Поиск по заголовку или описанию..." style="flex: 1; min-width: 220px; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
+                
+                <select name="status" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff;">
+                    <option value="">Все статусы</option>
+                    <?php foreach ($statuses as $st): ?>
+                        <option value="<?= htmlspecialchars($st) ?>" <?= $filterStatus === $st ? 'selected' : '' ?>><?= htmlspecialchars($st) ?></option>
+                    <?php endforeach; ?>
+                </select>
+
+                <select name="priority" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff;">
+                    <option value="">Все приоритеты</option>
+                    <?php foreach ($priorities as $pr): ?>
+                        <option value="<?= htmlspecialchars($pr) ?>" <?= $filterPriority === $pr ? 'selected' : '' ?>><?= htmlspecialchars($pr) ?></option>
+                    <?php endforeach; ?>
+                </select>
+
+                <button type="submit" class="btn-primary" style="border: none; cursor: pointer;">Найти</button>
+                
+                <?php if ($search !== '' || $filterStatus !== '' || $filterPriority !== ''): ?>
+                    <a href="bugs.php" class="nav-btn">Сбросить</a>
+                <?php endif; ?>
+            </form>
 
             <?php if (count($bugs) > 0): ?>
                 <div class="table-wrapper">
@@ -72,8 +97,31 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Блок пагинации -->
+                <?php if ($totalPages > 1): ?>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; flex-wrap: wrap; gap: 10px;">
+                        <span class="muted-hint">Показано <?= count($bugs) ?> из <?= (int)$totalItems ?> (Страница <?= (int)$page ?> из <?= (int)$totalPages ?>)</span>
+                        <div style="display: flex; gap: 6px;">
+                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                <?php 
+                                    $queryParams = http_build_query([
+                                        'q'        => $search,
+                                        'status'   => $filterStatus,
+                                        'priority' => $filterPriority,
+                                        'page'     => $i,
+                                    ]);
+                                ?>
+                                <a href="bugs.php?<?= $queryParams ?>" class="nav-btn <?= $i === $page ? 'active' : '' ?>">
+                                    <?= $i ?>
+                                </a>
+                            <?php endfor; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
             <?php else: ?>
-                <p class="empty-msg">Дефектов пока нет.</p>
+                <p class="empty-msg">Дефекты не найдены.</p>
             <?php endif; ?>
         </section>
     </div>
