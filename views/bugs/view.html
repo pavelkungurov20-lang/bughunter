@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugHunter — Дефект #<?= (int)$bug['bug_id'] ?></title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <?php $activeMenu = 'bugs'; require dirname(__DIR__) . '/partials/header.html'; ?>
+
+        <?php if ($flash): ?>
+            <div class="alert <?= htmlspecialchars($flash['type']) ?>">
+                <?= htmlspecialchars($flash['message']) ?>
+            </div>
+        <?php endif; ?>
+
+        <section class="table-section">
+            <div class="section-header">
+                <h2>Дефект #<?= (int)$bug['bug_id'] ?>: <?= htmlspecialchars($bug['title']) ?></h2>
+                <div class="actions-cell">
+                    <a href="project_view.php?id=<?= (int)$bug['project_id'] ?>" class="btn-sm">← К проекту [<?= htmlspecialchars($bug['project_code']) ?>]</a>
+                    <a href="bugs.php" class="btn-sm">К списку багов</a>
+                    
+                    <?php if (canManageBug($pdo, $bug)): ?>
+                        <a href="bug_edit.php?id=<?= (int)$bug['bug_id'] ?>" class="btn-primary">Редактировать баг</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <table>
+                <tr>
+                    <th style="width: 18%;">Проект</th>
+                    <td style="width: 32%;">
+                        <a href="project_view.php?id=<?= (int)$bug['project_id'] ?>" class="table-link">
+                            [<?= htmlspecialchars($bug['project_code']) ?>] <?= htmlspecialchars($bug['project_name']) ?>
+                        </a>
+                    </td>
+                    <th style="width: 18%;">Статус</th>
+                    <td style="width: 32%;"><strong><?= htmlspecialchars($bug['status']) ?></strong></td>
+                </tr>
+                <tr>
+                    <th>Автор</th>
+                    <td><?= htmlspecialchars($bug['reporter_name'] ?? '—') ?></td>
+                    <th>Приоритет</th>
+                    <td><strong><?= htmlspecialchars($bug['priority']) ?></strong></td>
+                </tr>
+                <tr>
+                    <th>Исполнитель</th>
+                    <td colspan="3"><?= htmlspecialchars($bug['assignee_name'] ?? 'Не назначен') ?></td>
+                </tr>
+                <tr>
+                    <th>Описание</th>
+                    <td colspan="3"><?= nl2br(htmlspecialchars((string)($bug['description'] ?? '—'))) ?></td>
+                </tr>
+                <tr>
+                    <th>Шаги воспроизведения</th>
+                    <td colspan="3"><?= nl2br(htmlspecialchars((string)($bug['steps'] ?? '—'))) ?></td>
+                </tr>
+                <tr>
+                    <th>Ожидаемый результат</th>
+                    <td colspan="3"><?= nl2br(htmlspecialchars((string)($bug['expected_result'] ?? '—'))) ?></td>
+                </tr>
+                <tr>
+                    <th>Фактический результат</th>
+                    <td colspan="3"><?= nl2br(htmlspecialchars((string)($bug['actual_result'] ?? '—'))) ?></td>
+                </tr>
+            </table>
+        </section>
+
+        <section class="table-section">
+            <h2>Комментарии (<?= count($comments) ?>)</h2>
+            <?php if (count($comments) > 0): ?>
+                <div class="comments-list">
+                    <?php foreach ($comments as $c): ?>
+                        <div class="comment-item">
+                            <div class="comment-meta">
+                                <strong><?= htmlspecialchars($c['author_name'] ?? 'Пользователь') ?></strong>
+                                <span><?= htmlspecialchars($c['created_at']) ?></span>
+                            </div>
+                            <p><?= nl2br(htmlspecialchars($c['body'])) ?></p>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <p class="empty-msg">Комментариев пока нет.</p>
+            <?php endif; ?>
+
+            <form method="POST" action="bug_view.php?id=<?= (int)$bug['bug_id'] ?>" class="comment-form">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrfToken()) ?>">
+                <textarea name="body" rows="3" placeholder="Написать комментарий..." required></textarea>
+                <button type="submit" class="btn-primary">Отправить комментарий</button>
+            </form>
+        </section>
+
+        <section class="table-section">
+            <h2>История изменений (<?= count($history) ?>)</h2>
+            <?php if (count($history) > 0): ?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Пользователь</th>
+                            <th>Поле</th>
+                            <th>Было</th>
+                            <th>Стало</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($history as $h): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($h['user_name'] ?? '—') ?></td>
+                                <td><?= htmlspecialchars($h['field']) ?></td>
+                                <td><?= htmlspecialchars((string)$h['old_val']) ?></td>
+                                <td><?= htmlspecialchars((string)$h['new_val']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p class="empty-msg">Изменений полей ещё не было.</p>
+            <?php endif; ?>
+        </section>
+    </div>
+</body>
+</html>

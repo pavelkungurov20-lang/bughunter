@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>BugHunter — Проекты</title>
+    <link rel="stylesheet" href="assets/style.css">
+
+</head>
+<body>
+    <div class="container">
+        <?php $activeMenu = 'projects'; require dirname(__DIR__) . '/partials/header.html'; ?>
+
+        <?php if ($flash): ?>
+            <div class="alert <?= htmlspecialchars($flash['type']) ?>">
+                <?= htmlspecialchars($flash['message']) ?>
+            </div>
+        <?php endif; ?>
+
+        <section class="table-section">
+            <div class="section-header">
+                <h2>Список проектов</h2>
+                <a href="project_create.php" class="btn-primary">+ Создать проект</a>
+            </div>
+
+            <?php if (count($projects) > 0): ?>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Код</th>
+                                <th>Название</th>
+                                <th>Владелец</th>
+                                <th>Дефектов</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($projects as $proj): ?>
+                                <tr>
+                                    <td><?= (int)$proj['project_id'] ?></td>
+                                    <td><strong><?= htmlspecialchars($proj['code']) ?></strong></td>
+                                    <td><?= htmlspecialchars($proj['name']) ?></td>
+                                    <td><?= htmlspecialchars($proj['owner_name'] ?? 'Не назначен') ?></td>
+                                    <td><?= (int)$proj['bugs_count'] ?></td>
+                                    <td class="actions-cell">
+                                        <a href="project_view.php?id=<?= (int)$proj['project_id'] ?>" class="btn-sm">Открыть</a>
+                                        
+                                        <?php if (canManageProject($pdo, $proj)): ?>
+                                            <a href="project_edit.php?id=<?= (int)$proj['project_id'] ?>" class="btn-sm">Изменить</a>
+                                            
+                                            <?php if ((int)$proj['bugs_count'] === 0): ?>
+                                                <form method="POST" action="project_delete.php" class="inline-form" onsubmit="return confirm('Удалить проект?');">
+                                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrfToken()) ?>">
+                                                    <input type="hidden" name="project_id" value="<?= (int)$proj['project_id'] ?>">
+                                                    <button type="submit" class="btn-sm btn-danger">Удалить</button>
+                                                </form>
+                                            <?php else: ?>
+                                                <span class="muted-hint" title="Нельзя удалить проект с дефектами">Удаление недоступно</span>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <p class="empty-msg">Проекты пока не созданы.</p>
+            <?php endif; ?>
+        </section>
+    </div>
+</body>
+</html>

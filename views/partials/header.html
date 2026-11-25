@@ -1,0 +1,13 @@
+<header class="topbar">
+    <div class="topbar-left">
+        <h1>BugHunter</h1>
+        <nav class="nav-buttons">
+            <a href="projects.php" class="nav-btn <?= ($activeMenu ?? '') === 'projects' ? 'active' : '' ?>">Проекты</a>
+            <a href="bugs.php" class="nav-btn <?= ($activeMenu ?? '') === 'bugs' ? 'active' : '' ?>">Все баги</a>
+        </nav>
+    </div>
+    <div class="user-panel">
+        <span>Пользователь: <strong><?= htmlspecialchars($_SESSION['user_name'] ?? '') ?></strong></span>
+        <a href="logout.php" class="btn-logout">Выйти</a>
+    </div>
+</header>
