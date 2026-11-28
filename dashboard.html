@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Дашборд — BugHunter</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #ffffff;
+            padding: 18px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid #2563eb;
+        }
+        .stat-card.danger { border-left-color: #ef4444; }
+        .stat-card.success { border-left-color: #16a34a; }
+        .stat-card.warning { border-left-color: #f59e0b; }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        .dashboard-columns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 24px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <?php require __DIR__ . '/partials/header.html'; ?>
+    <?php if (!empty($flash)): ?>
+        <div class="alert <?= htmlspecialchars($flash['type']) ?>">
+            <?= htmlspecialchars($flash['message']) ?>
+        </div>
+    <?php endif; ?>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value"><?= (int)$summary['total_bugs'] ?></div>
+            <div class="stat-label">Всего дефектов</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-value"><?= (int)$summary['new_bugs'] ?></div>
+            <div class="stat-label">Новые</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value"><?= (int)$summary['in_progress_bugs'] + (int)$summary['review_bugs'] ?></div>
+            <div class="stat-label">В работе / На проверке</div>
+        </div>
+        <div class="stat-card success">
+            <div class="stat-value"><?= (int)$summary['closed_bugs'] ?></div>
+            <div class="stat-label">Закрыто</div>
+        </div>
+        <div class="stat-card danger">
+            <div class="stat-value"><?= (int)$summary['active_critical'] ?></div>
+            <div class="stat-label">Открытые критические</div>
+        </div>
+    </div>
+
+    <div class="dashboard-columns">
+        <section class="table-section">
+            <h2>Статистика по проектам</h2>
+            <?php if (!empty($byProject)): ?>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Проект</th>
+                                <th>Всего</th>
+                                <th>Открыто</th>
+                                <th>Закрыто</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($byProject as $row): ?>
+                                <tr>
+                                    <td>
+                                        <a href="project_view.php?id=<?= (int)$row['project_id'] ?>" class="table-link">
+                                            [<?= htmlspecialchars($row['code']) ?>] <?= htmlspecialchars($row['name']) ?>
+                                        </a>
+                                    </td>
+                                    <td><?= (int)$row['total_count'] ?></td>
+                                    <td><strong><?= (int)$row['open_count'] ?></strong></td>
+                                    <td><?= (int)$row['closed_count'] ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <p class="empty-msg">Проекты отсутствуют.</p>
+            <?php endif; ?>
+        </section>
+
+        <section class="table-section">
+            <h2>Нагрузка на исполнителей</h2>
+            <?php if (!empty($byAssignee)): ?>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Исполнитель</th>
+                                <th>Всего задач</th>
+                                <th>В работе</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($byAssignee as $row): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($row['assignee_name']) ?></td>
+                                    <td><?= (int)$row['total_assigned'] ?></td>
+                                    <td><strong><?= (int)$row['active_assigned'] ?></strong></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <p class="empty-msg">Нет данных о задачах.</p>
+            <?php endif; ?>
+        </section>
+    </div>
+
+    <section class="table-section">
+        <h2>Распределение по приоритетам</h2>
+        <?php if (!empty($byPriority)): ?>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Приоритет</th>
+                            <th>Количество дефектов</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($byPriority as $row): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($row['priority']) ?></td>
+                                <td><strong><?= (int)$row['cnt'] ?></strong></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
+            <p class="empty-msg">Дефекты отсутствуют.</p>
+        <?php endif; ?>
+    </section>
+</div>
+</body>
+</html>

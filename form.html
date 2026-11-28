@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>BugHunter — <?= htmlspecialchars($pageTitle) ?></title>
+    <link rel="stylesheet" href="assets/style.css">
+
+</head>
+<body>
+    <div class="auth-box">
+        <h1><?= htmlspecialchars($pageTitle) ?></h1>
+
+        <?php if (!empty($errors)): ?>
+            <div class="alert error">
+                <?php foreach ($errors as $err): ?>
+                    <p><?= htmlspecialchars($err) ?></p>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
+        <form method="POST" action="<?= htmlspecialchars($formAction) ?>">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrfToken()) ?>">
+
+            <label>Код проекта (например, BH, CRM)
+                <input type="text" name="code" value="<?= htmlspecialchars($code) ?>" maxlength="10" required>
+            </label>
+
+            <label>Название проекта
+                <input type="text" name="name" value="<?= htmlspecialchars($name) ?>" maxlength="100" required>
+            </label>
+
+            <button type="submit">Сохранить</button>
+        </form>
+
+        <p class="auth-link"><a href="projects.php">← Вернуться к списку проектов</a></p>
+    </div>
+</body>
+</html>
